@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/manthan307/corebase/db"
 	"github.com/manthan307/corebase/server"
 	"github.com/manthan307/corebase/utils/configs"
 	"github.com/manthan307/corebase/utils/logger"
@@ -24,20 +25,17 @@ var (
 				fx.WithLogger(func() fxevent.Logger {
 					return &fxevent.ZapLogger{Logger: logger.ProvideFxLogger()}
 				}),
-				fx.Provide(
-					logger.ProvideAppLogger,
-					LoadConfig,
-				),
+				fx.Provide(logger.ProvideAppLogger),
+				db.Module,
+				fx.Provide(LoadConfig),
 				server.Module,
 			).Run()
 		},
 	}
 )
 
-func LoadConfig() configs.Config {
-	return configs.Config{
-		Port: Port,
-	}
+func LoadConfig(client *db.Client) configs.Config {
+	return configs.InitConfig(Port, client)
 }
 
 func init() {
