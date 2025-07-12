@@ -2,10 +2,11 @@ package db
 
 import (
 	"context"
-	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/manthan307/corebase/db/client"
+	"github.com/manthan307/corebase/utils/helper"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
 )
@@ -17,7 +18,7 @@ var Module = fx.Module(
 )
 
 func InitPostgresDataBase(lc fx.Lifecycle, log *zap.Logger) *pgxpool.Pool {
-	dbURL := os.Getenv("PG_URL")
+	dbURL := helper.GetEnv("PG_URL", "")
 	if dbURL == "" {
 		log.Fatal("PG_URL is not set")
 	}
@@ -47,13 +48,17 @@ func InitPostgresDataBase(lc fx.Lifecycle, log *zap.Logger) *pgxpool.Pool {
 }
 
 type Client struct {
-	Db       *pgxpool.Pool
-	Settings client.SettingRepo
+	Db          *pgxpool.Pool
+	Settings    client.SettingRepo
+	Admin       client.AdminsRepo
+	RedisClient *redis.Client
 }
 
-func NewClient(pool *pgxpool.Pool) *Client {
+func NewClient(pool *pgxpool.Pool, log *zap.Logger) *Client {
 	return &Client{
-		Db:       pool,
-		Settings: client.NewSettingRepo(pool),
+		Db:          pool,
+		Settings:    client.NewSettingRepo(pool),
+		RedisClient: NewRedisClient(log),
+		Admin:       client.NewAdminRepo(pool),
 	}
 }

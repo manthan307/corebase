@@ -55,20 +55,18 @@ VALUES
   ('auth.lockout_duration', '600s'),
   ('auth.token_expiry', '3600'),
   ('auth.max_login_attempts', '5'),
-  ('app.name', 'corebase'),
   ('notifications.enabled', 'true'),
-  ('rate_limit', '10'),
   ('server.read_timeout', '15'),
   ('server.write_timeout', '15'),
   ('server.idle_timeout', '60'),
   ('cors.enabled', 'true'),
+  ('cors.max_age','720'),
   ('cors.allow_methods', '["GET", "POST", "PUT", "DELETE"]'),
   ('cors.allow_headers', '["Content-Type", "Authorization"]'),
   ('cors.allow_credentials', 'true'),
   ('uploads.max_file_size', '5242880'),
   ('uploads.allowed_types', '["jpg", "png", "pdf", "docx"]'),
-  ('uploads.storage_path', '/var/www/uploads'),
-  ('session.timeout', '1800')
+  ('uploads.storage_path', '/var/www/uploads')
 ON CONFLICT ("key") DO UPDATE SET
   "value" = EXCLUDED."value",
   updated_at = now();

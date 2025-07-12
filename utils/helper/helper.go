@@ -50,20 +50,18 @@ func ParseStringSlice(s string, fallback []string) []string {
 
 // GetEnv returns the value of an environment variable or a fallback
 func GetEnv(key string, fallback string) string {
-	val := os.Getenv(key)
-	if val == "" {
-		return fallback
+	if value, exists := os.LookupEnv(key); exists {
+		return value
 	}
-	return val
+	return fallback
 }
 
 // GetEnvSlice splits an environment variable by comma or returns a fallback
 func GetEnvSlice(key string, fallback []string) []string {
-	val := os.Getenv(key)
-	if val == "" {
-		return fallback
+	if value, exists := os.LookupEnv(key); exists {
+		return strings.Split(value, ",")
 	}
-	return strings.Split(val, ",")
+	return fallback
 }
 
 // GenerateRandomString returns a cryptographically secure random base64 string
@@ -83,4 +81,8 @@ func GenerateRandomString(n int) string {
 // GetLocalAddresses returns local IPs like 127.0.0.1 and ::1
 func GetLocalAddresses() []string {
 	return []string{"127.0.0.1", "::1", "localhost"}
+}
+
+func ParseJSON(data string, v interface{}) error {
+	return json.Unmarshal([]byte(data), v)
 }

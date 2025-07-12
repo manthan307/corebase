@@ -4,14 +4,15 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/manthan307/corebase/db"
 	"github.com/manthan307/corebase/routes"
+	"github.com/manthan307/corebase/server/middleware"
 	"github.com/manthan307/corebase/utils/configs"
+	"github.com/manthan307/corebase/utils/helper"
 	"github.com/manthan307/corebase/utils/logger"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -25,15 +26,22 @@ var Module = fx.Module("server",
 
 func ProvideServer(d configs.Config, log *zap.Logger, client *db.Client) *http.Server {
 	port := d.Port
-	if envPort := os.Getenv("PORT"); envPort != "" {
+	if envPort := helper.GetEnv("PORT", "8000"); envPort != "" {
 		if p, err := strconv.Atoi(envPort); err == nil {
 			port = p
 		}
 	}
 
+	gin.SetMode(gin.ReleaseMode)
+
 	router := gin.New()
 	router.Use(logger.LoggerMiddleware(log))
 	router.Use(gin.Recovery())
+
+	router.SetTrustedProxies(d.TrustedProxies)
+
+	router.Use(middleware.SecureHeaders(client))
+	router.Use(middleware.CORS(d, client))
 
 	return &http.Server{
 		Addr:         fmt.Sprintf(":%d", port),
@@ -50,7 +58,7 @@ func StartServer(lc fx.Lifecycle, d configs.Config, server *http.Server, log *za
 	if ok {
 		//TODO
 		engine.POST("/internal/shutdown", func(c *gin.Context) {
-			secret := os.Getenv("SHUTDOWN_SECRET")
+			secret := helper.GetEnv("SHUTDOWN_SECRET", "")
 			if secret != "" && c.GetHeader("X-Secret") != secret {
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 				return
