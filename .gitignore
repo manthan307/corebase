@@ -29,4 +29,25 @@ go.work.sum
 
 # Editor/IDE
 # .idea/
-# .vscode/
+.vscode/
+
+# Local configuration files
+*.local
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+
+# Build directories
+build/
+dist/
+out/
+
+# OS generated files
+.DS_Store
+
+node_modules/
